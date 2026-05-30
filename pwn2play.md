@@ -1,7 +1,7 @@
 # Pwn2Play Open CTF
 Sat, 30 May 2026, 09:00 UTC — Sat, 30 May 2026, 18:00 UTC
 
-Links:
+**Links**
 - CTFtime: <https://ctftime.org/event/3220>
 - Official URL: <https://pwn2play.biterra.co/>
 
@@ -15,10 +15,9 @@ Links:
 <img width="2431" height="1326" alt="2026-05-30-11:02:42" src="https://github.com/user-attachments/assets/c84501b1-2028-4629-9131-2a036af18261" />
 
 
-# Starting off light
-Description:
-
-A suspicious device on the network sent a single "Heartbeat" packet. We captured it in a file named heartbeat.pcap. Find the hidden message inside the packet's payload to get the flag.
+# The Hello Packet
+**Objective**
+- A suspicious device on the network sent a single "Heartbeat" packet. We captured it in a file named heartbeat.pcap. Find the hidden message inside the packet's payload to get the flag.
 
 
 We download the pcap and open it up using Wireshark, there's a single UDP packet waiting for us with the secret data:
@@ -28,14 +27,44 @@ We download the pcap and open it up using Wireshark, there's a single UDP packet
 <img width="656" height="256" alt="2026-05-30-11:19:48" src="https://github.com/user-attachments/assets/48d5afb1-6b33-4641-b87a-a50669a0d871" />
 
 
-# Dive right in the deep end:
-The file is right there. The permissions are fine. But every time you reach for it, something stops you. Something you can't see, can't find, can't kill. It watches every move you make — and it's faster than you are. Read the flag.
+-------------------
 
-<img width="965" height="77" alt="2026-05-30-11:25:04" src="https://github.com/user-attachments/assets/80a5b49f-3eab-43ae-9936-e01716098129" />
+# Hex Checkpoint
+**Objective**
+- Convert the ASCII string "Hi" into lowercase hexadecimal and submit the bytes with no spaces.
 
-When we click the link the task description, it takes us to a lab machine in TryHackMe. We start the lab machine, download the ovpn config file and start the connection
+This one was pretty simple:
 ```bash
-$ sudo openvpn <connectionfile>
+❯❯ echo -n "Hi" | xxd                   
+00000000: 4869                                     Hi
 ```
+The -n flag omits newlines!
+
+<img width="667" height="255" alt="2026-05-30-11:37:52" src="https://github.com/user-attachments/assets/c31004ec-51f2-48b9-8d66-c6a55d19a06c" />
+
+
+
+# Ping Of The Hill
+**Objective**
+- This web app generously allows you to ping random targets, because what could possibly go wrong? Use an exploit to extract the contents of flag.txt hosted on the local disk.
+
+
+<img width="1350" height="793" alt="2026-05-30-13:47:58" src="https://github.com/user-attachments/assets/a4919a4c-98e3-42c9-a51e-712b66b84fb1" />
+
+We simply chain a command after the IP address. I started of with some basics like `pwd` and `ls`. And eventually found the flag:
+```bash
+1.1.1.1 ; find / -type f -name flag.txt
+1.1.1.1 ; cat /tmp/flag.txt
+```
+<img width="1257" height="782" alt="2026-05-30-14:01:57" src="https://github.com/user-attachments/assets/27854823-ab26-49a8-a4cd-c26a38553b49" />
+
+
+-----------------
+
+
+
+
+
+
 
 
