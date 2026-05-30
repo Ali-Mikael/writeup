@@ -7,7 +7,8 @@ Sat, 30 May 2026, 09:00 UTC — Sat, 30 May 2026, 18:00 UTC
 
 
 # My facilities
-<img width="1569" height="634" alt="2026-05-25-18:33:49" src="https://github.com/user-attachments/assets/9de40e24-b8a7-4a02-91ec-ea55741268d8" />
+<img width="1544" height="622" alt="2026-05-31-01:19:28" src="https://github.com/user-attachments/assets/d585b8ae-474b-4d61-9427-6bef42166795" />
+
 
 
 # Challenge page
@@ -20,7 +21,7 @@ Sat, 30 May 2026, 09:00 UTC — Sat, 30 May 2026, 18:00 UTC
 - A suspicious device on the network sent a single "Heartbeat" packet. We captured it in a file named heartbeat.pcap. Find the hidden message inside the packet's payload to get the flag.
 
 
-We download the pcap and open it up using Wireshark, there's a single UDP packet waiting for us with the secret data:
+We download the `pcap` and open it up with `Wireshark`, there's a single UDP packet waiting for us with the secret data:
 
 <img width="1603" height="681" alt="2026-05-30-11:17:12" src="https://github.com/user-attachments/assets/d9149810-c6e1-42d4-9489-391e330e4a55" />
 
@@ -50,13 +51,16 @@ The -n flag omits newlines!
 
 
 # Ping Of The Hill
+**Description**
+- This web app generously allows you to ping random targets, because what could possibly go wrong?
+
 **Objective**
-- This web app generously allows you to ping random targets, because what could possibly go wrong? Use an exploit to extract the contents of flag.txt hosted on the local disk.
+- Use an exploit to extract the contents of flag.txt hosted on the local disk.
 
 
 <img width="1350" height="793" alt="2026-05-30-13:47:58" src="https://github.com/user-attachments/assets/a4919a4c-98e3-42c9-a51e-712b66b84fb1" />
 
-We simply chain a command after the IP address. I started of with some basics like `pwd` and `ls`. And eventually found the flag:
+We simply chain a command after specifying the IP address. I started of with some basics like `pwd` and `ls` to get a feel of what's what, and eventually found the flag:
 ```bash
 1.1.1.1 ; find / -type f -name flag.txt
 1.1.1.1 ; cat /tmp/flag.txt
@@ -72,12 +76,12 @@ We simply chain a command after the IP address. I started of with some basics li
 **Description**
 - Someone pushed a little too much to production.
 
-The link takes us to a blog site:
+The link in the challenge takes us to a blog site:
 
 <img width="1347" height="933" alt="2026-05-30-15:04:59" src="https://github.com/user-attachments/assets/647c21e9-2213-493a-b6f9-8334d9f91107" />
 
 
-I found a .git directory with `ffuf` and by using `curl` I was able to recover a crumble:
+I found a `.git` directory using `ffuf` and `curl`ed a crumble:
 ```bash
 ❯❯ curl https://gotgitapp.pwn2play.com/.git/config
 [core]
@@ -131,25 +135,29 @@ Funny thing is I just did this kind of exercise yesterday right before I complet
 <img width="667" height="352" alt="2026-05-30-15:24:25" src="https://github.com/user-attachments/assets/5c8eafaf-9906-40f9-a29b-d1c9d1b3e23c" />
 
 
-No more low hanging fruit :/
+No more low hanging fruit :/ -->
 
 <img width="1251" height="723" alt="2026-05-30-15:23:52" src="https://github.com/user-attachments/assets/f6e71389-8c81-4db1-aa59-dabf39e84898" />
 
 
-I tried a loooot of stuff but we're here for the loot.
-The filter is not letting quotes, whitespaces and certain commands through etc. So my first instinct was to base64encode the payload. We create it like so:
+I tried a loooot of stuff, but we're here for the loot, so let's get down to the solution!
+
+The filter is not letting quotes, spaces, and certain commands through etc. 
+How do I know this? Because in the previous Ping of The Hill the `index.php` file was in the working directory and readable, so I went through it. The filters were commented out though, so I already knew then they were gonna drop the second version soon.
+
+So my instinct said to base64 encode the payload:
 ```bash
 ❯❯ echo -n "cat /tmp/flag.txt" | base64
 Y2F0IC90bXAvZmxhZy50eHQ=
 ```
 
-Now I only had to find a way to execute it, the final command then became:
+Now the only thing left was to execute the payload on the target, the final command then becomes:
 ```bash
 1.1.1.1;$(base64$IFS-d<<<Y2F0IC90bXAvZmxhZy50eHQ=)
 ```
-We first had to feed the string to `base64` for decoding through `standard input` using `<<<`. Once that was solved the problem was that the shell kept printing the command, not running. We solve that with command substitution `$()`. 
+First we feed the string to `base64`'s standard input using the herestring `<<<`. Once the decoding was solved, the problem was that the shell kept printing the command to stdout, not running it. We solve that with command substitution `$()`. 
 
-The only problem I couldn't solve on my own, was how to get a whitespace between `base64` and `-d`. It wouldn't execute without it. Here I just asked chatGPT "how do I get a whitespace on the CLI without actually typing the whitespace". My whole attack was depending on this 😂 But the AI came in clutch. The rules of the game was not to use AI, so I let this be the first and last.
+The only problem I couldn't solve on my own, was how to get a space between `base64` and `-d`. It wouldn't execute without it. Here I just asked chatGPT "how do I get a space on the CLI without actually typing it". It suggested something weird but mentioned the IFS (Internal Field Separator) variable, which I then used to my advantage. My whole attack was depending on this. The rules of the game was not to use AI, so I let this be the first and last! I was just very much stuck and couldn't find anything useful from my search engine. 
 
 
 
@@ -163,18 +171,19 @@ The only problem I couldn't solve on my own, was how to get a whitespace between
 
 -------
 
+
 # Mud on Your Face
 <img width="663" height="348" alt="2026-05-30-15:39:33" src="https://github.com/user-attachments/assets/bb2f916b-80ef-4861-bdfd-3aa4a3d1d769" />
 
 
-Download zip file --> rename --> get hash
+Download zip file --> rename --> extract hash
 ```bash
 ❯❯ zip2john protected_flag.zip > flag.hash
 
 # Crack it
 ❯❯ john flag.hash 
 ```
-John was going on for 15 minutes and nothing happened, so I changed the wordlist and it took less then a second after that:
+John was huffing and puffing for about 15 minutes without yielding any results, so I halted the operation and changed the wordlist. And wouldnt you know a second later I had myself a password!
 
 <img width="1508" height="238" alt="2026-05-30-16:11:37" src="https://github.com/user-attachments/assets/b8312bbd-1099-42f6-bcce-b884fa9d5ce1" />
 
@@ -192,10 +201,6 @@ John was going on for 15 minutes and nothing happened, so I changed the wordlist
 <img width="311" height="130" alt="2026-05-30-17:38:28" src="https://github.com/user-attachments/assets/485b7b95-0b38-445d-ba56-9e742d1704f8" />
 
 
+I tried a couple of other challenges as well but didn't have time to complete them. Also there was this one Linux challenge I really wanted to do, but it was hosted at `TryHackMe` and the lab didn't work properly for some reason. My scans weren't going through, so I reset the whole thing, got like 5 minutes of uptime where I could scan it, but then it went down again :/, I did this for a couple of times, but it was taking too much of my focus without any results, so I had to leave that one alone and focus my efforts elsewhere.
 
-
-
-
----------
-
-# 
+But all in all a very nice experience!
